@@ -17,11 +17,13 @@ help:
 	echo ""
 
 setup:
-	python3 -m venv .venv
-	source .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+	@echo "🔧 Setting up virtual environment and installing dependencies..."
+	conda env create -f environment.yml
+	@echo "To activate the environment, run: conda activate secon"
 
 lint:
-	ruff src/ notebooks/
+	@echo "🔍 Running ruff linting..."
+	conda run -n secon ruff check src/ notebooks/
 
 test:
 	pytest

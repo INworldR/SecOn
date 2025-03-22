@@ -1,0 +1,16 @@
+name: secon
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - jupyter
+  - jupyterlab
+  - pip:
+    - ruff  # Assuming this is your linter based on CHANGELOG.md
+    # Other pip-only packages
