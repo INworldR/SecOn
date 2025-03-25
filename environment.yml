@@ -11,6 +11,8 @@ dependencies:
   - seaborn
   - jupyter
   - jupyterlab
+  - requests
+  - python-dotenv
   - pip:
     - ruff  # Assuming this is your linter based on CHANGELOG.md
     # Other pip-only packages
