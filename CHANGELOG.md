@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2025-03-25
+
+### Added
+
+- Enhanced `get_data.py` script with advanced filtering capabilities:
+  - Time-based filtering (`--hours`) to get logs from the last N hours
+  - Program/service filtering (`--program`) to filter logs by service name
+  - Priority filtering (`--priority`) to filter logs by syslog priority
+  - Pattern searching (`--pattern`) to filter logs by regex patterns in messages
+  - Onion Query Language support (`--oql`) for complex query syntax
+  - Multiple output formats (default, JSON, YAML)
+  - Support for aggregations through OQL (e.g., `groupby` operations)
+
+### Changed
+
+- Improved SSH tunnel handling in `get_data.py`
+- Enhanced Elasticsearch query builder for more precise log filtering
+- Log output preserves original format
+
+---
+
 ## [0.1.0] - 2025-03-22
 
 ### Added

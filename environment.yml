@@ -13,6 +13,7 @@ dependencies:
   - jupyterlab
   - requests
   - python-dotenv
+  - pyyaml
   - pip:
     - ruff  # Assuming this is your linter based on CHANGELOG.md
     # Other pip-only packages
