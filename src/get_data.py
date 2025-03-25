@@ -1,8 +1,10 @@
 #!/Users/marc/miniconda3/envs/SecOn/bin/python
 
 import os
+import time
 import argparse
 import requests
+import subprocess
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 import urllib3
@@ -15,6 +17,16 @@ load_dotenv("../.env")
 ELASTIC_URL = os.getenv("ELASTIC_URL")
 USERNAME = os.getenv("ELASTIC_USER")
 PASSWORD = os.getenv("ELASTIC_PASSWORD")
+
+def open_ssh_tunnel():
+    """
+    Open an SSH tunnel in the background.
+    Returns the subprocess object for later termination.
+    """
+    cmd = [
+        "ssh", "-L", "9200:localhost:9200", "-N", "-T", "secon"
+    ]
+    return subprocess.Popen(cmd)
 
 def get_logs(hostname: str, limit: int = 20, index: str = "logs-*", debug: bool = False, dry_run: bool = False):
     """
@@ -98,18 +110,27 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    logs = get_logs(
-        hostname=args.hostname,
-        limit=args.limit,
-        index=args.index,
-        debug=args.debug,
-        dry_run=args.dry_run
-    )
+    print("[+] Opening SSH tunnel to tsecon...")
+    tunnel = open_ssh_tunnel()
+    time.sleep(1.5)  # Give tunnel time to initialize
 
-    if logs:
-        for log in logs:
-            timestamp = log.get("@timestamp", "N/A")
-            message = log.get("message", str(log)[:100])
-            print(f"{timestamp} - {message}")
-    elif not args.dry_run:
-        print("[!] No logs found or failed to retrieve logs.")
+    try:
+        logs = get_logs(
+            hostname=args.hostname,
+            limit=args.limit,
+            index=args.index,
+            debug=args.debug,
+            dry_run=args.dry_run
+        )
+        if logs:
+            for log in logs:
+                timestamp = log.get("@timestamp", "N/A")
+                message = log.get("message", str(log)[:100])
+                print(f"{timestamp} - {message}")
+        elif not args.dry_run:
+            print("[!] No logs found or failed to retrieve logs.")
+    finally:
+        print("[+] Closing SSH tunnel...")
+        tunnel.terminate()
+        tunnel.wait()
+
