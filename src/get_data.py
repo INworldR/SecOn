@@ -5,6 +5,8 @@ import argparse
 import requests
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Load environment variables from .env
 load_dotenv("../.env")
