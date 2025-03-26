@@ -153,3 +153,43 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Vim swap/backup files
+*.swp
+*.swo
+*.swm
+*.swn
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# MacOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# VS Code
+.vscode/
+.history/
+
+# Log-Dateien
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*.orig
+*.rej

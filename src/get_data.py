@@ -3,7 +3,6 @@
 import os
 import time
 import sys
-import re
 import json
 import argparse
 import requests
@@ -37,50 +36,72 @@ def open_ssh_tunnel():
     ]
     return subprocess.Popen(cmd)
 
-def parse_oql(oql_query, debug=False):
+def oql_to_elasticsearch(oql_query, hours=None, debug=False):
     """
-    Parse Onion Query Language query and convert it to Elasticsearch DSL.
-    This is a simple implementation that supports basic OQL syntax.
+    Convert Onion Query Language (OQL) directly to Elasticsearch DSL.
+    This implementation preserves the OQL structure while adding time filters if needed.
     
     Args:
         oql_query (str): Onion Query Language query string
+        hours (int): Optional hours filter to add to query
         debug (bool): Enable verbose output
         
     Returns:
-        dict: Elasticsearch query parts (query, aggs)
+        dict: Elasticsearch query body
     """
     if debug:
-        print(f"Parsing OQL query: {oql_query}")
+        print(f"Processing OQL query: {oql_query}")
     
     # Split the query into parts (query | pipeline)
     parts = oql_query.split('|', 1)
     query_part = parts[0].strip()
     pipeline_part = parts[1].strip() if len(parts) > 1 else None
     
-    # Parse the query part
-    query_terms = query_part.split()
-    must_clauses = []
+    # Direct translation of OQL to Elasticsearch
+    # Start with an empty query
+    query_body = {"bool": {"must": []}}
     
+    # Add each term from the query part
+    query_terms = query_part.split()
     for term in query_terms:
         if ':' in term:
             field, value = term.split(':', 1)
             
             # Handle wildcards
             if '*' in value:
-                must_clauses.append({
+                query_body["bool"]["must"].append({
                     "wildcard": {
                         field: value
                     }
                 })
             else:
-                must_clauses.append({
+                query_body["bool"]["must"].append({
                     "match": {
                         field: value
                     }
                 })
     
+    # Add time filter if hours parameter is provided
+    if hours:
+        query_body["bool"]["must"].append({
+            "range": {
+                "@timestamp": {
+                    "gte": f"now-{hours}h",
+                    "lte": "now"
+                }
+            }
+        })
+    
+    # If no filters were added, use match_all
+    if not query_body["bool"]["must"]:
+        query_body = {"match_all": {}}
+    
+    # Build request body
+    request_body = {
+        "query": query_body
+    }
+    
     # Parse pipeline part (if present)
-    aggs = {}
     if pipeline_part:
         # Handle groupby
         if pipeline_part.startswith('groupby'):
@@ -107,137 +128,29 @@ def parse_oql(oql_query, debug=False):
                         }
                     }
                     current_agg = current_agg["aggs"]["groupby"]
-    
-    # Build the query
-    if must_clauses:
-        query = {
-            "bool": {
-                "must": must_clauses
-            }
-        }
-    else:
-        query = {"match_all": {}}
-    
-    if debug:
-        print(f"Parsed query: {json.dumps(query, indent=2)}")
-        if aggs:
-            print(f"Parsed aggregations: {json.dumps(aggs, indent=2)}")
-    
-    return {"query": query, "aggs": aggs}
-
-def build_query(hostname=None, hours=None, program=None, priority=None, 
-                pattern=None, oql=None, limit=20, debug=False):
-    """
-    Build Elasticsearch query based on provided filters.
-    
-    Args:
-        hostname (str): Host to filter logs by
-        hours (int): Number of hours to look back
-        program (str): Program/service name to filter by
-        priority (str): Syslog priority to filter by
-        pattern (str): Regex pattern to search in message field
-        oql (str): Onion Query Language query string
-        limit (int): Number of results to return
-        debug (bool): Enable verbose output
-        
-    Returns:
-        dict: Elasticsearch query
-    """
-    # Check if OQL is provided
-    if oql:
-        # Parse OQL and get query and aggregations
-        oql_parts = parse_oql(oql, debug)
-        query = oql_parts["query"]
-        aggs = oql_parts["aggs"]
-        
-        # Start with the query from OQL
-        request_body = {
-            "size": 0 if aggs else limit,  # If aggregations, don't need individual docs
-            "sort": [{"@timestamp": "desc"}],
-            "query": query
-        }
-        
-        # Add aggregations if present
-        if aggs:
-            request_body["aggs"] = aggs
-        
-        if debug:
-            print(f"OQL query body: {json.dumps(request_body, indent=2)}")
             
-        return request_body
-    
-    # Start with a match_all query for standard filters
-    query = {
-        "bool": {
-            "must": []
-        }
-    }
-    
-    # Add hostname filter
-    if hostname:
-        query["bool"]["must"].append({"match": {"host.name": hostname}})
-    
-    # Add time range filter
-    if hours:
-        time_filter = {
-            "range": {
-                "@timestamp": {
-                    "gte": f"now-{hours}h",
-                    "lte": "now"
-                }
-            }
-        }
-        query["bool"]["must"].append(time_filter)
-    
-    # Add program/service filter
-    if program:
-        program_filter = {"match": {"program": program}}
-        query["bool"]["must"].append(program_filter)
-    
-    # Add priority filter
-    if priority:
-        priority_filter = {"match": {"syslog.priority": priority}}
-        query["bool"]["must"].append(priority_filter)
-    
-    # Add regex pattern search on message field
-    if pattern:
-        pattern_filter = {
-            "regexp": {
-                "message": {
-                    "value": pattern
-                }
-            }
-        }
-        query["bool"]["must"].append(pattern_filter)
-    
-    # If no filters were added, use match_all
-    if not query["bool"]["must"]:
-        query = {"match_all": {}}
-    
-    # Build the full request body
-    request_body = {
-        "size": limit,
-        "sort": [{"@timestamp": "desc"}],
-        "query": query
-    }
+            request_body["size"] = 0  # No need for individual docs with aggregations
+            request_body["aggs"] = aggs
+        else:
+            # Add support for other pipeline operations here
+            pass
+    else:
+        # For non-aggregation queries, include size and sort
+        request_body["size"] = 100  # Default limit
+        request_body["sort"] = [{"@timestamp": "desc"}]
     
     if debug:
-        print(f"Query body: {json.dumps(request_body, indent=2)}")
+        print(f"Translated query: {json.dumps(request_body, indent=2)}")
         
     return request_body
 
-def get_logs(hostname=None, hours=None, program=None, priority=None, 
-             pattern=None, oql=None, limit=20, index="logs-*", debug=False, dry_run=False):
+def get_logs(oql, hours=None, limit=100, index="logs-*", debug=False, dry_run=False):
     """
-    Fetch filtered log entries from Elasticsearch.
+    Fetch logs from Elasticsearch using OQL.
 
     Args:
-        hostname (str): The name of the host to filter logs by.
-        hours (int): Number of hours to look back in logs.
-        program (str): Filter logs by program/service name.
-        priority (str): Filter logs by syslog priority.
-        pattern (str): Regex pattern to search in message field.
         oql (str): Onion Query Language query string.
+        hours (int): Optional time filter (hours back).
         limit (int): Number of log entries to retrieve.
         index (str): Index pattern to search within.
         debug (bool): Enable verbose debug output.
@@ -248,17 +161,12 @@ def get_logs(hostname=None, hours=None, program=None, priority=None,
     """
     url = ELASTIC_URL.replace("logs-*", index)
     
-    # Build the query with all filters
-    query = build_query(
-        hostname=hostname,
-        hours=hours,
-        program=program,
-        priority=priority,
-        pattern=pattern,
-        oql=oql,
-        limit=limit,
-        debug=debug
-    )
+    # Convert OQL directly to Elasticsearch DSL
+    query = oql_to_elasticsearch(oql, hours, debug)
+    
+    # Override size if set in arguments and not an aggregation query
+    if "aggs" not in query and limit:
+        query["size"] = limit
 
     if dry_run:
         print(f"Query URL: {url}")
@@ -331,38 +239,35 @@ def parse_args():
         argparse.Namespace: Parsed arguments
     """
     parser = argparse.ArgumentParser(
-        description="Query Elasticsearch logs with flexible filtering options"
+        description="Query Elasticsearch logs using Onion Query Language (OQL)"
     )
     
-    # Basic filters
-    parser.add_argument("--hostname", type=str, help="Hostname to filter logs by")
-    parser.add_argument("--hours", type=int, help="Get logs from the last N hours")
-    parser.add_argument("--program", type=str, help="Filter by program/service name")
-    parser.add_argument("--priority", type=str, help="Filter by syslog priority")
-    parser.add_argument("--pattern", type=str, help="Regex pattern to search in message field")
-    parser.add_argument("--oql", type=str, help="Onion Query Language query string")
+    # Required OQL parameter
+    parser.add_argument("--oql", type=str, required=True, 
+                        help="Onion Query Language query string")
     
-    # Output control
-    parser.add_argument("--limit", type=int, default=20, help="Number of log entries to retrieve")
-    parser.add_argument("--index", type=str, default="logs-*", help="Index pattern to search")
-    parser.add_argument("--format", choices=["default", "json", "yaml"], default="default", help="Output format")
+    # Optional parameters
+    parser.add_argument("--hours", type=int, 
+                        help="Get logs from the last N hours")
+    parser.add_argument("--limit", type=int, default=100, 
+                        help="Number of log entries to retrieve (for non-aggregation queries)")
+    parser.add_argument("--index", type=str, default="logs-*", 
+                        help="Index pattern to search")
+    parser.add_argument("--format", choices=["default", "json", "yaml"], 
+                        default="default", help="Output format")
     
     # Debug options
-    parser.add_argument("--debug", action="store_true", help="Enable verbose debug output")
-    parser.add_argument("--dry-run", action="store_true", help="Show the query but don't send the request")
+    parser.add_argument("--debug", action="store_true", 
+                        help="Enable verbose debug output")
+    parser.add_argument("--dry-run", action="store_true", 
+                        help="Show the query but don't send the request")
     
     # Show help if no arguments are provided
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    args = parser.parse_args()
-    
-    # Validate that at least one filter is specified
-    if not any([args.hostname, args.hours, args.program, args.priority, args.pattern, args.oql]):
-        parser.error("At least one filter (--hostname, --hours, --program, --priority, --pattern, or --oql) must be specified")
-    
-    return args
+    return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
@@ -373,12 +278,8 @@ if __name__ == "__main__":
 
     try:
         logs = get_logs(
-            hostname=args.hostname,
-            hours=args.hours,
-            program=args.program,
-            priority=args.priority,
-            pattern=args.pattern,
             oql=args.oql,
+            hours=args.hours,
             limit=args.limit,
             index=args.index,
             debug=args.debug,
