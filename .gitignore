@@ -184,6 +184,10 @@ Desktop.ini
 .vscode/
 .history/
 
+# JetBrains IDEs
+.idea/
+*.iml
+
 # Log-Dateien
 *.log
 
