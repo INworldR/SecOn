@@ -5,6 +5,10 @@ The enhanced `get_data.py` script now supports Onion Query Language (OQL) for po
 ## Basic OQL Examples
 
 ```bash
+# Filter logs observer.type:firewall
+./get_data.py --oql "observer.type:firewall | groupby event.action" --hours 24
+./get_data.py --oql "observer.type:firewall" --hours 24
+
 # Filter logs from hosts starting with 'ww'
 ./get_data.py --oql "host.name: ww*"
 

@@ -164,8 +164,11 @@ def get_logs(oql, hours=None, limit=100, index="logs-*", debug=False, dry_run=Fa
     # Convert OQL directly to Elasticsearch DSL
     query = oql_to_elasticsearch(oql, hours, debug)
     
+    # Override size if hours is specified (get all matching logs)
+    if hours is not None:
+        query["size"] = 10000  # Set to a high value (Elasticsearch has a default max of 10000)
     # Override size if set in arguments and not an aggregation query
-    if "aggs" not in query and limit:
+    elif "aggs" not in query and limit:
         query["size"] = limit
 
     if dry_run:

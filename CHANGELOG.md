@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.2.0] - 2025-03-25
+## [0.2.0] - 2025-03-25ff
 
 ### Added
 
@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved SSH tunnel handling in `get_data.py`
 - Enhanced Elasticsearch query builder for more precise log filtering
 - Log output preserves original format
+- Fixed an issue where `--hours` parameter would still be limited to 100 results by default
 
 ---
 
