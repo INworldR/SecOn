@@ -20,12 +20,22 @@ seqdate() {
 }
 
 
-PATTERN="host.name:secon observer.type:firewall"
+#PATTERN="host.name:secon observer.type:firewall"
+PATTERN="observer.type:firewall"
 
-for DAY in $(seqdate 2025-03-25 2025-03-28); do 
-    #echo "$DAY"
-    python get_data.py --oql \
-        "$PATTERN @timestamp:>=${DAY}T00:00:00Z @timestamp:<=${DAY}T23:59:59Z" \
-        --full-extract --format json \
-        --export ../data/data_log_firewall_${DAY}.json
+for DAY in $(seqdate 2025-03-25 2025-03-28); do
+    FILE=../data/data_log_firewall_${DAY}.json
+    #echo -n '' >$FILE
+    tmpfile=$(mktemp ../data/.export.XXXXXX)
+    for HOUR in {00..23}; do
+        tmpfile_hour=$(mktemp ../data/.export_hour.XXXXXX)
+        python get_data.py --oql \
+            "$PATTERN @timestamp:>=${DAY}T${HOUR}:00:00Z @timestamp:<=${DAY}T${HOUR}:59:59Z" \
+            --full-extract --format json \
+            --export "$tmpfile_hour"
+        cat "$tmpfile_hour" >>"$tmpfile"
+        rm "$tmpfile_hour"
+    done
+    ./fix_merged_json.py "$tmpfile" "$FILE"
+    rm "$tmpfile"
 done

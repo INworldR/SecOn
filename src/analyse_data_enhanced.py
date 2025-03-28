@@ -1,4 +1,65 @@
-#!/usr/bin/env python
+def fix_json_file(file_path, error_line, error_char, truncate=False):
+    """
+    Attempt to fix a JSON file with parsing errors.
+    
+    Args:
+        file_path: Path to the corrupted JSON file
+        error_line: Line number where the error was found
+        error_char: Character position where the error was found
+        truncate: If True, attempt to truncate the file at the error
+        
+    Returns:
+        tuple: (success, data) where data is the fixed JSON if successful
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        content_lines = content.split('\n')
+        
+        # Show the problematic area
+        start_line = max(0, error_line - 5)
+        end_line = min(len(content_lines), error_line + 5)
+        
+        print("\nContent near the error (± 5 lines):")
+        for i in range(start_line, end_line):
+            prefix = ">>> " if i + 1 == error_line else "    "
+            display_text = content_lines[i][:100] + ('...' if len(content_lines[i]) > 100 else '')
+            print(f"{prefix}Line {i+1}: {display_text}")
+            
+        if not truncate:
+            return False, None
+            
+        print("\nAttempting to fix by truncating file at error point...")
+        
+        # Calculate character position in the entire file
+        char_count = 0
+        for i in range(error_line - 1):
+            char_count += len(content_lines[i]) + 1  # +1 for newline
+            
+        # Truncate at the error point and add closing bracket
+        truncated_content = content[:char_count]
+        
+        # Find the last opening [ or { and add corresponding closing bracket
+        last_opening = max(truncated_content.rfind('['), truncated_content.rfind('{'))
+        if last_opening >= 0:
+            if truncated_content[last_opening] == '[':
+                truncated_content += ']'
+            else:
+                truncated_content += '}'
+                
+        # Try to parse the truncated content
+        try:
+            fixed_data = json.loads(truncated_content)
+            print(f"Successfully fixed JSON by truncating at line {error_line}")
+            return True, fixed_data
+        except json.JSONDecodeError as e:
+            print(f"Failed to fix JSON: {e}")
+            return False, None
+            
+    except Exception as e:
+        print(f"Error attempting to fix JSON: {e}")
+        return False, None#!/usr/bin/env python
 """
 Enhanced analysis module for SecurityOnion log data with focus on attack pattern detection.
 
@@ -78,12 +139,14 @@ class SecurityLogAnalyzer:
         self.ip_classification = {}
         self.summary = {}
         
-    def load_data(self, file_path: str) -> bool:
+    def load_data(self, file_path: str, truncate_json=False, show_error_context=False) -> bool:
         """
         Load SecurityOnion log data from JSON file.
         
         Args:
             file_path: Path to JSON log file
+            truncate_json: If True, attempt to fix JSON errors by truncating
+            show_error_context: If True, show context around JSON errors
             
         Returns:
             bool: True if loading was successful, False otherwise
@@ -92,7 +155,35 @@ class SecurityLogAnalyzer:
             # Check file extension
             if file_path.endswith('.json'):
                 with open(file_path, 'r', encoding='utf-8') as f:
-                    logs = json.load(f)
+                    try:
+                        logs = json.load(f)
+                    except json.JSONDecodeError as e:
+                        print(f"Error decoding JSON: {e}")
+                        
+                        # Extract error line and position
+                        error_msg = str(e)
+                        line_match = re.search(r"line (\d+)", error_msg)
+                        char_match = re.search(r"char (\d+)", error_msg)
+                        
+                        if line_match and (show_error_context or truncate_json):
+                            line_num = int(line_match.group(1))
+                            char_pos = int(char_match.group(1)) if char_match else 0
+                            
+                            if truncate_json:
+                                # Try to fix the JSON
+                                success, fixed_data = fix_json_file(file_path, line_num, char_pos, truncate=True)
+                                if success:
+                                    logs = fixed_data
+                                else:
+                                    return False
+                            elif show_error_context:
+                                # Just show the error context
+                                fix_json_file(file_path, line_num, char_pos, truncate=False)
+                                return False
+                            else:
+                                return False
+                        else:
+                            return False
             else:
                 print(f"Error: Unsupported file format. Expected .json file, got: {file_path}")
                 return False
@@ -683,6 +774,18 @@ def parse_arguments():
         action="store_true"
     )
     
+    parser.add_argument(
+        "--truncate-json",
+        help="Attempt to fix JSON by truncating at the error point",
+        action="store_true"
+    )
+    
+    parser.add_argument(
+        "--show-error-context",
+        help="Show lines around JSON parsing error without attempting to fix",
+        action="store_true"
+    )
+    
     return parser.parse_args()
 
 
@@ -708,7 +811,8 @@ def main():
     analyzer = SecurityLogAnalyzer(verbose=args.verbose)
     
     # Load and analyze data
-    if not analyzer.load_data(input_file):
+    if not analyzer.load_data(input_file, truncate_json=args.truncate_json, 
+                              show_error_context=args.show_error_context):
         return 1
     
     analyzer.preprocess_data()

@@ -13,6 +13,8 @@ This script is part of the SecOn security monitoring toolkit, designed to comple
 - **APT Detection**: Applies specialized heuristics to identify potential Advanced Persistent Threat activity
 - **Attack Grouping**: Groups related attacks to identify campaigns based on timing, targets, and methods
 - **Comprehensive Reporting**: Generates detailed reports in both human-readable and JSON formats
+- **JSON Error Handling**: Advanced options to debug and fix common JSON parsing errors
+- **Automatic File Selection**: Uses newest JSON file in the data directory when no input file specified
 
 ## Installation
 
@@ -36,6 +38,8 @@ pip install pandas numpy
 - `input_file.json` (optional): Path to JSON log file exported from SecurityOnion. If not specified, uses the newest JSON file in the `../data` directory.
 - `--output results.json`: Save analysis results to specified JSON file
 - `--verbose`: Enable verbose output for debugging
+- `--show-error-context`: Show the context around JSON parsing errors without attempting to fix
+- `--truncate-json`: Attempt to automatically fix JSON errors by truncating at the error point
 
 ### Examples
 
@@ -52,6 +56,16 @@ Analyze the newest log file in ../data:
 Save analysis results to a file:
 ```bash
 ./analyse_data_enhanced.py example.json --output analysis_results.json
+```
+
+Debug JSON parsing errors:
+```bash
+./analyse_data_enhanced.py problematic_file.json --show-error-context
+```
+
+Attempt to fix JSON errors automatically:
+```bash
+./analyse_data_enhanced.py problematic_file.json --truncate-json
 ```
 
 ## Understanding the Output
@@ -107,6 +121,34 @@ The JSON output contains detailed information including:
 - APT candidates with supporting evidence
 - Top attackers with metrics
 
+## JSON Error Handling
+
+The script includes advanced error handling for JSON parsing issues:
+
+### Using `--show-error-context`
+
+This option displays the content around the JSON parsing error (± 5 lines) without attempting to fix it. Useful for diagnosing issues in your JSON files.
+
+Example output:
+```
+Error decoding JSON: Extra data: line 1243878 column 2 (char 28065153)
+
+Content near the error (± 5 lines):
+    Line 1243874:     "type": "logs",
+    Line 1243875:     "dataset": "syslog"
+    Line 1243876:   }
+    Line 1243877: }
+>>> Line 1243878: ][
+    Line 1243879: {
+    Line 1243880:   "metadata": {
+```
+
+### Using `--truncate-json`
+
+This option attempts to fix JSON errors by truncating the file at the error point and ensuring proper JSON structure. Useful for files that may have been incorrectly concatenated or contain multiple JSON objects.
+
+For more complex JSON errors, consider using the separate `fix_merged_json.py` utility script which specializes in fixing issues with merged JSON arrays.
+
 ## Integration with Other Tools
 
 The JSON output is designed to be compatible with other analysis tools and can be used for:
@@ -120,7 +162,11 @@ The JSON output is designed to be compatible with other analysis tools and can b
 
 - **Missing Data Fields**: If the script reports missing fields, check that your export contains the required fields (source IP, destination IP, timestamps, etc.)
 - **Memory Issues**: For very large log files, consider filtering the data before analysis
-- **JSON Serialization Errors**: If you encounter errors when saving JSON, please report them (recent fixes have addressed known issues)
+- **JSON Parsing Errors**: 
+  - Use `--show-error-context` to diagnose JSON issues
+  - For simple errors, try `--truncate-json` to attempt automatic fixing
+  - For merged JSON arrays (with `][`), use the separate `fix_merged_json.py` utility
+  - For persistent JSON issues, consider using the `jq` tool to validate and fix your files
 
 ## Contributing
 

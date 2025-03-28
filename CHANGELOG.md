@@ -17,7 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive JSON output format for integration with other security tools
   - Human-readable console summary for quick analysis
   - Auto-detection of newest JSON file in the data directory
+  - Advanced JSON error handling with context display and repair options
+  - New CLI options `--show-error-context` and `--truncate-json` for troubleshooting
   - Support for exporting analysis results to JSON for further processing
+
+- New `fix_merged_json.py` utility script:
+  - Specialized tool for repairing incorrectly merged JSON arrays
+  - Multiple repair strategies for different types of JSON corruption
+  - Handles common case of multiple arrays joined with `][`
 
 ### Added
 - `README_analyse_enhanced.md` with detailed documentation for the enhanced analysis module
