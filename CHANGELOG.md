@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2025-03-29
+
+### Added
+- New `analyse_data_enhanced.py` script for advanced log analysis:
+  - Detection of attack patterns and sophistication levels (LOW, MEDIUM, HIGH, APT)
+  - APT (Advanced Persistent Threat) pattern identification using specialized heuristics
+  - Attack grouping to identify campaigns based on time, targets, and techniques
+  - Comprehensive JSON output format for integration with other security tools
+  - Human-readable console summary for quick analysis
+  - Auto-detection of newest JSON file in the data directory
+  - Support for exporting analysis results to JSON for further processing
+
+### Added
+- `README_analyse_enhanced.md` with detailed documentation for the enhanced analysis module
+- Test script for verifying functionality of the enhanced analysis module
+
+### Fixed
+- JSON serialization error with `Timedelta` objects in analysis output
+
+---
+
 ## [0.3.0] - 2025-03-28
 
 ### Added
@@ -65,7 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduced initial `Makefile` with the following targets:
   - `make setup` – Create virtual environment and install dependencies
   - `make lint` – Run linter (`ruff`) on `src/` and `notebooks/`
-  - `make test` – Run unit tests using `pytest`
+  - `make test` – Run unit tests (pytest)
   - `make notebooks` – Start Jupyter Lab
   - `make git-clean-ignored` – Remove tracked files that are now ignored by `.gitignore`
   - `make help` – Show available commands with short descriptions
@@ -80,12 +101,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Usage: `make log-change target=setup desc="Initial setup of venv and deps"`
 
 - Added `make bump-version` target to increment patch version
----
-
-## [Unreleased]
-
-### Planned
-
-- Add `make format` using `black`
-- Auto-generate documentation with `make docs`
-- Add Docker support
