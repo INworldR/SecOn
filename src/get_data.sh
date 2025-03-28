@@ -26,11 +26,13 @@ PATTERN="observer.type:firewall"
 for DAY in $(seqdate 2025-03-25 2025-03-28); do
     FILE=../data/data_log_firewall_${DAY}.json
     #echo -n '' >$FILE
-    tmpfile=$(mktemp ../data/.export.XXXXXX)
-    for HOUR in {00..23}; do
-        tmpfile_hour=$(mktemp ../data/.export_hour.XXXXXX)
+    tmpfile=$(mktemp ../data/.export_${DAY}.XXXXXX)
+    for HOUR in {0..23}; do
+        HOUR_PADDED=$(printf "%02d" $HOUR)
+        tmpfile_hour=$(mktemp ../data/.export_${DAY}_${HOUR_PADDED}.XXXXXX)
+        echo "timestamp:>=${DAY}T${HOUR_PADDED}:00:00Z @timestamp:<=${DAY}T${HOUR_PADDED}:59:59Z"
         python get_data.py --oql \
-            "$PATTERN @timestamp:>=${DAY}T${HOUR}:00:00Z @timestamp:<=${DAY}T${HOUR}:59:59Z" \
+            "$PATTERN @timestamp:>=${DAY}T${HOUR_PADDED}:00:00Z @timestamp:<=${DAY}T${HOUR_PADDED}:59:59Z" \
             --full-extract --format json \
             --export "$tmpfile_hour"
         cat "$tmpfile_hour" >>"$tmpfile"
