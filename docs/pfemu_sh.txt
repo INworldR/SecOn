@@ -1,0 +1,161 @@
+#! /bin/bash
+
+source /etc/blocker/functions.sh
+
+unset DEBUG
+
+function initialize () {
+
+    unset LOG;      unset ARR;
+    unset ADDRES;   unset ADDR;     unset DIRECTION; unset HOST;
+    unset PROTO;    unset PROTOID;  unset PROLN;    unset ACTION;    unset IFACE;
+    unset SRC;      unset SP;       unset DST;      unset DP;
+    unset PFLAGS;   unset TCPFLAG;  unset FLAGS;    unset MFLAGS;
+
+    line=$(echo $line|sed -e 's#(unknown #(unknown#')
+    IFS=$', '; ARR=($line); unset IFS;
+}
+
+case $(hostname) in
+    XX)   HID=1; ;;
+    YYY)  HID=2; ;;
+esac
+
+while read line; do
+    initialize
+
+    HOST=${ARR[3]}
+    for n in ${!ARR[@]}; do
+        case ${ARR[$n]} in
+            proto)   PROTO=${ARR[$n+1]}
+                     PFLAGS="${ARR[$n+2]},${ARR[$n+3]},${ARR[$n+4]},${ARR[$n+5]}"; ;;
+            len)     PROLN=${ARR[$n+1]};;
+            add)     ACTION="$HOST add ${ARR[$n+1]} ${ARR[$n+2]}";;
+            dropped) ACTION=$(echo "$HOST dropped ${ARR[$n+1]}"|sed -e 's#:##g');;
+            tarpit)  ACTION=$(echo "$HOST tarpit ${ARR[$n+1]}"|sed -e 's#:##g');;
+            in:*)    IFACE="${ARR[$n]}";;
+            out:*)   DIRECTION="${ARR[$n]}";;
+            NAT)     DIRECTION="$DIRECTION NAT ${ARR[$n+1]}" ;;
+            *-\>*)   ADDRES="(${ARR[$n]})";;
+        esac
+    done
+    if [ -n "$DEBUG" ]; then echoArray ARR | sed -e 's# #\n#g'; fi
+
+    MFLAGS='none'
+    case $PROTO in
+        TCP)
+            PROTO="tcp"; PROTOID=6; TCPFLAG=0
+            PFLAGS="$(echo $PFLAGS|sed -e 's#(##' -e 's#)##' )"
+            IFS=$','; FLAGS=($PFLAGS); unset IFS
+            for n in ${!FLAGS[@]}; do
+                case ${FLAGS[$n]} in
+                    FIN) let TCPFLAG=$TCPFLAG+1  ;;
+                    SYN) let TCPFLAG=$TCPFLAG+2  ;;
+                    RST) let TCPFLAG=$TCPFLAG+4  ;;
+                    PSH) let TCPFLAG=$TCPFLAG+8  ;;
+                    ACK) let TCPFLAG=$TCPFLAG+16 ;;
+                    URG) let TCPFLAG=$TCPFLAG+32 ;;
+                    *)   FLAGS[$n]='' ;;
+                esac
+            done
+            MFLAGS=$(echoArray FLAGS) # e.g. "SYN ACK"
+            ;;
+        UDP)
+            PROTO="udp";  PROTOID=17; TCPFLAG='' ;;
+        ICMP)
+            PROTO="icmp"; PROTOID=1;
+            PFLAGS="$(echo $PFLAGS|sed -e 's#(##' -e 's#)##' )"
+            IFS=$','; FLAGS=($PFLAGS); unset IFS
+            for n in ${!FLAGS[@]}; do
+                case ${FLAGS[$n]} in
+                    type) TYPE=${FLAGS[$n+1]} ;;
+                    code) CODE=${FLAGS[$n+1]} ;;
+                    *)   FLAGS[$n]='' ;;
+                esac
+            done            
+            MFLAGS="type $TYPE code $CODE" # e.g. "type 3 code 3"
+            ;;
+    esac
+    ADDRES="$(echo $ADDRES|sed -e 's#(##g' -e 's#)##g' )"
+    IFS=$'->'; ADDR=($ADDRES); unset IFS
+    case ${ADDR[0]} in
+        *:*)
+            ADDR[1]=$(echo "${ADDR[0]}"|cut -d: -f2-2); SP=${ADDR[1]}
+            ADDR[0]=$(echo "${ADDR[0]}"|cut -d: -f1-1); SRC=${ADDR[0]} 
+            ADDR[3]=$(echo "${ADDR[2]}"|cut -d: -f2-2); DP=${ADDR[3]}
+            ADDR[2]=$(echo "${ADDR[2]}"|cut -d: -f1-1); DST=${ADDR[2]}
+            ;;
+        *)  SRC=${ADDR[0]}; SP=0; DST=${ADDR[2]}; DP=0 ;;
+    esac
+    if [ -n "$DEBUG" ]; then echoArray ADDR | sed -e 's# #\n#g'; fi
+
+    #LOG[0]=$HID          # INT := host ID {origin NONNEGINT:rule_number}
+    LOG[1]=0             # INT := 0 {NONNEGINT:sub_rule_number}
+    LOG[2]=''            # TXT := '' {DATA:anchor}
+    LOG[3]=0             # INT := 0 {NONNEGINT:tracker_id}
+    LOG[4]=$IFACE        # TXT interface {DATA:interface}
+    LOG[5]='match'       # TXT reason := 'match' {DATA:reason}
+    LOG[6]=$ACTION       # TXT action {DATA:action}
+    LOG[7]=$DIRECTION    # TXT DIRECTION ?? {DATA:direction}
+    LOG[8]=4             # INT IP version := 4 {NONNEGINT:ip_version}
+    LOG[9]='0x0'         # TXT ?? := '0x0' {GREEDYDATA:sub_msg}
+    LOG[10]=''           # TXT ipv4_tos := ''
+    LOG[11]=64           # INT ipv4_ecn := 64
+    LOG[12]=255          # INT ipv4_ttl := 255
+    LOG[13]=0            # INT ipv4_id := 0
+    LOG[14]=$MFLAGS      # TXT ipv4_offset := 'none'
+    LOG[15]=0            # INT ipv4_flags protocol number ???
+    LOG[15]=$PROTOID     # INT ipv4_protocol_id
+    LOG[16]=$PROTO       # TXT ipv4_protocol (TCP,UDP,ICMP,...) 
+    LOG[17]=$PROLN       # INT ipv4_protocol_length
+    LOG[18]=$SRC         # IP  source address
+    LOG[19]=$DST         # IP  destination address
+    LOG[20]=$SP          # INT source port
+    LOG[21]=$DP          # INT destination port
+    LOG[22]=0            # INT data_length
+    LOG[23]=$TCPFLAG     # INT TCP_FLAGS
+    LOG[24]=0            # INT sequence_number := 0
+    LOG[25]=0            # INT ack := 0
+    LOG[26]=0            # INT window := 0
+    LOG[27]=''           # INT urg := 0
+    LOG[28]='nop;nop;TS' # TXT options := 'nop;nop;TS'
+
+    #OUTPUT="$(echoArray LOG | sed -e 's# #,#g')"
+    OUTPUT=$HID
+    for n in ${!LOG[@]}; do
+        OUTPUT="$OUTPUT,${LOG[$n]}"
+    done
+    if [ -n "$DEBUG" ]; then echo "${OUTPUT}"; fi
+    
+    /usr/bin/logger -t filterlog "$OUTPUT"
+
+    #/usr/bin/logger -t filterlog "$HID,0,,0,$IFACE,match,$ACTION,$DIRECTION,$IPV,0x0,,64,255,0,none,$PROTN,$PROTO,$PROLN,$SRC,$DST,$SP,$DP,$TCPFLAG,$TCPFLAG,0,0,0,,nop;nop;TS"
+
+done
+
+exit 0
+
+# logstash
+
+#match => ["message", "(%{NONNEGINT:rule_number})?\,(%{NONNEGINT:sub_rule_number})?\,(%{DATA:anchor})?\,(%{NONNEGINT:tracker_id})?\,%{DATA:interface}\,%{DATA:reason}\,%{DATA:action}\,%{DATA:direction}\,%{NONNEGINT:ip_version},%{GREEDYDATA:sub_msg}"]
+
+#columns => ["ipv4_tos","ipv4_ecn","ipv4_ttl","ipv4_id","ipv4_offset", "ipv4_flags","ipv4_protocol_id","ipv4_protocol","ipv4_protocol_length","source_ip","destination_ip","source_port","destination_port","data_length","tcp_flags","sequence_number","ack","window","urg","options"]
+
+#columns => ["class","flow_label","hop_limit","protocol","protocol_id","length","source_ip","destination_ip","source_port","destination_port","data_length","tcp_flags","sequence_number","ack","window","urg","options"]
+
+#convert => [ "destination_port", "integer" ]
+#convert => [ "source_port", "integer" ]
+#convert => [ "ip_version", "integer" ]
+#replace => { "type" => "firewall" }
+#add_tag=>  [ "pfsense","firewall" ]
+#remove_field => [ "sub_msg" ]
+
+
+#pfemu.sh 194.55.142.35 XXX.XX.XXX.XXX 51261 4070 dropped tcp in
+# logger -t filterlog "9,16777216,,1000000103,em1,match,block,in,4,0x0,,64,5620,0,none,6,tcp,63,194.55.142.35,XXX.XX.XXX.XXX,51261,4070,11,PA,2987092353,3522064689,4096,,nop;nop;TS"
+
+# ICMP
+#Aug 26 06:25:46 rt4 firewall,info dropped input: in:goldenfrog-us-pptp out:(unknown 0), proto ICMP (type 8, code 0), 204.16.240.52->209.160.125.78, len 68
+
+# TCP SYN
+#Aug 31 02:35:13 rt4 firewall,info dropped forward: in:bridge1(ether6) out:bridge1(ether2), src-mac 30:9c:23:ac:58:a2, proto TCP (SYN), 78.128.112.30:44545->XXX.XX.XXX.XXX:41149, len 40
