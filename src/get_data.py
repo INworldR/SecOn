@@ -342,12 +342,12 @@ if __name__ == "__main__":
         )
         
         if logs:
-            # First, export if requested
+            # Handle export and display
             if args.export and not args.dry_run:
                 export_logs(logs, args.export, args.format)
-            
-            # Then, display to console (unless it's a dry run)
-            if not args.dry_run:
+                print(f"[+] Exported {len(logs) if isinstance(logs, list) else 'aggregated'} logs to {args.export}")
+            # Display to console only if not exporting and not a dry run
+            elif not args.dry_run:
                 # Check if we have aggregation results (from OQL with groupby)
                 if isinstance(logs, dict) and "aggregations" in logs:
                     # Pretty print aggregation results
