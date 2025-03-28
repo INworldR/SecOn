@@ -7,7 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.2.0] - 2025-03-25ff
+## [0.3.0] - 2025-03-28
+
+### Added
+
+- Enhanced `get_data.py` script with pagination support to retrieve large datasets:
+  - New `--full-extract` flag to enable pagination beyond Elasticsearch's 10,000 document limit
+  - `--batch-size` parameter to control pagination batch size
+  - `--max-results` parameter to limit total number of results
+  - Progress tracking during large extractions
+  - Automatic fallback between pagination methods:
+    - Point in Time (PIT) + search_after (primary method)
+    - Plain search_after (first fallback)
+    - from/size pagination (second fallback, limited to 10,000 results)
+
+- Advanced OQL parsing with improved date filtering capabilities:
+  - Support for date ranges with `@timestamp:[START TO END]` syntax
+  - Support for comparison operators (`>=`, `>`, `<=`, `<`) with dates
+  - Automatic date formatting for full-day ranges
+  - Support for logical operators (`AND`, `OR`) in queries
+  - Better handling of complex nested queries
+
+### Changed
+
+- Improved error handling in Elasticsearch requests
+- Enhanced error messages for better troubleshooting
+- Optimized export functionality for large datasets
+
+---
+
+## [0.2.0] - 2025-03-25
 
 ### Added
 
