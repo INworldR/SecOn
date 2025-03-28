@@ -20,7 +20,7 @@ seqdate() {
 }
 
 
-PATTERN="observer.type:firewall"
+PATTERN="host.name:secon observer.type:firewall"
 
 for DAY in $(seqdate 2025-03-25 2025-03-28); do 
     #echo "$DAY"
