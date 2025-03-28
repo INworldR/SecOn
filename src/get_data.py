@@ -234,6 +234,56 @@ def format_logs(logs, format_type="default"):
             
     return formatted
 
+def export_logs(logs, filename, format_type="default"):
+    """
+    Export log entries to a file.
+    
+    Args:
+        logs (list or dict): Log entries or aggregation results
+        filename (str): Target filename to export to
+        format_type (str): Export format type (default, json, yaml)
+        
+    Returns:
+        bool: Success status
+    """
+    try:
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(os.path.abspath(filename)), exist_ok=True)
+        
+        with open(filename, 'w', encoding='utf-8') as f:
+            if isinstance(logs, dict) and "aggregations" in logs:
+                # For aggregation results
+                if format_type == "json":
+                    json.dump(logs["aggregations"], f, indent=2)
+                elif format_type == "yaml":
+                    try:
+                        import yaml
+                        yaml.dump(logs["aggregations"], f, default_flow_style=False)
+                    except ImportError:
+                        json.dump(logs["aggregations"], f, indent=2)
+                else:
+                    # Print a simplified version of the aggregations
+                    if "groupby" in logs["aggregations"]:
+                        buckets = logs["aggregations"]["groupby"]["buckets"]
+                        for bucket in buckets:
+                            f.write(f"{bucket['key']}: {bucket['doc_count']} documents\n")
+                            # Handle nested aggregations if they exist
+                            if "groupby" in bucket:
+                                nested_buckets = bucket["groupby"]["buckets"]
+                                for nested_bucket in nested_buckets:
+                                    f.write(f"  {nested_bucket['key']}: {nested_bucket['doc_count']} documents\n")
+            else:
+                # For regular log results
+                formatted_logs = format_logs(logs, format_type)
+                for log_entry in formatted_logs:
+                    f.write(f"{log_entry}\n")
+                    
+        print(f"[+] Successfully exported logs to {filename}")
+        return True
+    except Exception as e:
+        print(f"[!] Error exporting logs: {e}")
+        return False
+
 def parse_args():
     """
     Parse command-line arguments and show help if none provided.
@@ -258,6 +308,8 @@ def parse_args():
                         help="Index pattern to search")
     parser.add_argument("--format", choices=["default", "json", "yaml"], 
                         default="default", help="Output format")
+    parser.add_argument("--export", type=str,
+                       help="Export results to the specified file")
     
     # Debug options
     parser.add_argument("--debug", action="store_true", 
@@ -290,34 +342,40 @@ if __name__ == "__main__":
         )
         
         if logs:
-            # Check if we have aggregation results (from OQL with groupby)
-            if isinstance(logs, dict) and "aggregations" in logs:
-                # Pretty print aggregation results
-                if args.format == "json":
-                    print(json.dumps(logs["aggregations"], indent=2))
-                elif args.format == "yaml":
-                    if 'yaml' in sys.modules:
-                        print(yaml.dump(logs["aggregations"], default_flow_style=False))
-                    else:
+            # First, export if requested
+            if args.export and not args.dry_run:
+                export_logs(logs, args.export, args.format)
+            
+            # Then, display to console (unless it's a dry run)
+            if not args.dry_run:
+                # Check if we have aggregation results (from OQL with groupby)
+                if isinstance(logs, dict) and "aggregations" in logs:
+                    # Pretty print aggregation results
+                    if args.format == "json":
                         print(json.dumps(logs["aggregations"], indent=2))
-                        print("\n[!] PyYAML not installed. Falling back to JSON format.")
+                    elif args.format == "yaml":
+                        if 'yaml' in sys.modules:
+                            print(yaml.dump(logs["aggregations"], default_flow_style=False))
+                        else:
+                            print(json.dumps(logs["aggregations"], indent=2))
+                            print("\n[!] PyYAML not installed. Falling back to JSON format.")
+                    else:
+                        # Print a simplified version of the aggregations
+                        print("\nAggregation Results:")
+                        if "groupby" in logs["aggregations"]:
+                            buckets = logs["aggregations"]["groupby"]["buckets"]
+                            for bucket in buckets:
+                                print(f"{bucket['key']}: {bucket['doc_count']} documents")
+                                # Handle nested aggregations if they exist
+                                if "groupby" in bucket:
+                                    nested_buckets = bucket["groupby"]["buckets"]
+                                    for nested_bucket in nested_buckets:
+                                        print(f"  {nested_bucket['key']}: {nested_bucket['doc_count']} documents")
                 else:
-                    # Print a simplified version of the aggregations
-                    print("\nAggregation Results:")
-                    if "groupby" in logs["aggregations"]:
-                        buckets = logs["aggregations"]["groupby"]["buckets"]
-                        for bucket in buckets:
-                            print(f"{bucket['key']}: {bucket['doc_count']} documents")
-                            # Handle nested aggregations if they exist
-                            if "groupby" in bucket:
-                                nested_buckets = bucket["groupby"]["buckets"]
-                                for nested_bucket in nested_buckets:
-                                    print(f"  {nested_bucket['key']}: {nested_bucket['doc_count']} documents")
-            else:
-                # Regular log results
-                formatted_logs = format_logs(logs, args.format)
-                for log_entry in formatted_logs:
-                    print(log_entry)
+                    # Regular log results
+                    formatted_logs = format_logs(logs, args.format)
+                    for log_entry in formatted_logs:
+                        print(log_entry)
         elif not args.dry_run:
             print("[!] No logs found or failed to retrieve logs.")
     finally:
