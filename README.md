@@ -1,53 +1,127 @@
-# 🛡️ SecOn: SecurityOnion Implementation Project
+# 🛡️ SecOn: Data Science for Network Security Analysis
 
-> Enterprise-grade network security monitoring for a KMU-like private environment using SecurityOnion 2.4 with custom Python extensions and data science capabilities.
+> Advanced data science and machine learning techniques for analyzing network security data from SecurityOnion 2.4, demonstrating how data science can revolutionize cybersecurity analysis.
 
 ---
 
 ## 📋 Project Overview
 
-This project implements SecurityOnion 2.4 in a virtualized environment to provide comprehensive network security monitoring for a private network with server infrastructure, clients, and network equipment. The implementation includes custom Python scripts for enhanced data analysis and visualization.
+This project demonstrates the application of advanced data science methodologies to cybersecurity monitoring using data from SecurityOnion 2.4. It showcases how machine learning, statistical analysis, and data visualization can transform raw security logs into actionable intelligence, with a focus on comparing and benchmarking different analytical approaches.
 
 ### Key Objectives
 
-- Deploy SecurityOnion 2.4 in a KVM/QEMU virtual environment
-- Monitor network traffic across multiple servers, clients, and network devices
-- Analyze logs from mail servers and web servers
-- Develop custom Python scripts for enhanced data analysis and visualization
-- Implement effective alert mechanisms for security events
-- Build a foundation for future AI-based threat detection
+- Apply advanced clustering techniques to identify attack patterns in firewall logs
+- Implement and benchmark machine learning pipelines for attack classification
+- Perform time-series analysis to predict security incidents
+- Develop sophisticated visualization techniques for security data
+- Integrate Large Language Models for automated report generation
+- Systematically compare and evaluate different analytical methods
 
 ---
 
 ## 🔧 Technical Environment
 
-### Network Components
-- **Servers**: Multiple Gentoo and Debian servers
-- **Clients**: Approximately 20 workstations
-- **Network Equipment**: MikroTik and Ubiquity devices
-- **Log Sources**: 2 log hosts collecting data from 2 mail servers and 40 web servers
+### Data Sources
+- **SecurityOnion 2.4**: Enterprise-grade network security monitoring platform
+- **Log Types**: Firewall logs, IDS alerts, network flow data
+- **Infrastructure**: Monitoring approximately 20 workstations, multiple servers, and network equipment
+- **Volume**: Log events from 2 mail servers and 40 web servers
 
 ### Development Environment
-- **Virtualization**: KVM/QEMU
-- **Version Control**: Git/GitHub
-- **Programming**: Python with focus on data science libraries
-  - NumPy
-  - Pandas
-  - Matplotlib
-  - Seaborn
-- **Documentation**: Obsidian, Confluence
-- **Project Management**: Trello
+- **Language**: Python 3.12
+- **Core Libraries**:
+  - **Data Processing**: Pandas, NumPy
+  - **Machine Learning**: Scikit-learn, XGBoost, TensorFlow/Keras
+  - **Visualization**: Matplotlib, Seaborn, Plotly, NetworkX
+  - **NLP/LLM Integration**: Transformers, LangChain
+- **Development Tools**: Jupyter Lab, Git/GitHub
+- **Documentation**: Markdown, Jupyter Notebooks
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Analytical Approaches
+
+### 1. Advanced Clustering for Attack Pattern Detection
+- Hierarchical clustering to identify attack families
+- DBSCAN/HDBSCAN for anomaly detection
+- Self-Organizing Maps for threat landscape visualization
+- Comparative analysis of clustering algorithms
+
+### 2. Machine Learning Classification Pipelines
+- Supervised models (Random Forest, XGBoost, SVM, Neural Networks)
+- Weakly-supervised learning with Snorkel for limited labeled data
+- Hyperparameter optimization and cross-validation
+- Feature importance analysis for interpretability
+
+### 3. Time-Series Analysis and Forecasting
+- ARIMA vs. Prophet vs. LSTM for anomaly prediction
+- Change-point detection for security event analysis
+- Ensemble methods for robust prediction
+- Predictive maintenance for security systems
+
+### 4. Advanced Visualization Techniques
+- Interactive dashboards with Plotly and Dash
+- Network graph visualizations of threat patterns
+- Dimensionality reduction (t-SNE, UMAP) for complex datasets
+- Visual model explainability
+
+### 5. LLM Integration for Automated Analysis
+- Automated report generation using Large Language Models
+- Comparison of LLM capabilities for security analysis
+- Prompt engineering for security-focused outputs
+- Natural language querying of security data
+
+---
+
+## 📊 Jupyter Notebooks
+
+The project consists of a series of Jupyter notebooks, each demonstrating specific data science techniques applied to security analytics:
+
+1. `01_Data_Exploration_and_Preprocessing.ipynb`: Initial exploration and preparation of security log data
+2. `02_Clustering_for_Attack_Pattern_Discovery.ipynb`: Comparison of clustering techniques
+3. `03_Classification_Models_for_Threat_Detection.ipynb`: ML pipeline development and evaluation
+4. `04_Time_Series_Analysis_for_Anomaly_Detection.ipynb`: Forecasting and anomaly detection
+5. `05_Advanced_Visualization_Techniques.ipynb`: Visual analytics for security data
+6. `06_LLM_Integration_for_Automated_Reporting.ipynb`: Leveraging LLMs for analysis interpretation
+
+Each notebook systematically compares different methodologies, providing clear insights into their relative strengths and appropriate use cases.
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── data/              # Raw and processed security log data (not tracked)
+├── notebooks/         # Jupyter notebooks for analysis
+│   ├── 01_Data_Exploration_and_Preprocessing.ipynb
+│   ├── 02_Clustering_for_Attack_Pattern_Discovery.ipynb
+│   ├── 03_Classification_Models_for_Threat_Detection.ipynb
+│   ├── 04_Time_Series_Analysis_for_Anomaly_Detection.ipynb
+│   ├── 05_Advanced_Visualization_Techniques.ipynb
+│   └── 06_LLM_Integration_for_Automated_Reporting.ipynb
+├── src/               # Source code modules
+│   ├── data/          # Data extraction and preprocessing
+│   ├── models/        # Machine learning model implementations
+│   ├── visualization/ # Visualization functions
+│   └── utils/         # Utility functions
+├── results/           # Output: models, visualizations, reports (not tracked)
+├── docs/              # Documentation
+├── conf/             # Configuration files
+├── Makefile          # Project automation
+├── CHANGELOG.md      # Version history
+└── README.md
+```
+
+---
+
+## 🛠️ Getting Started
 
 ### Prerequisites
 
-- KVM/QEMU virtualization environment
-- Python >= 3.12
-- Git installed and configured
-- Security Onion 2.4 ISO
+- Python 3.12
+- Git
+- Access to SecurityOnion instance or sample security logs
 
 ### Installation
 
@@ -64,121 +138,25 @@ cp conf/example.env conf/.env
 # Edit .env file with your specific settings
 ```
 
-### SecurityOnion VM Setup
-
-1. Create a new KVM virtual machine with:
-   - At least 16GB RAM (recommended: 32GB for production use)
-   - 4+ CPU cores
-   - 200GB+ disk space
-   - Two network interfaces:
-     - Management interface (for accessing the web interface)
-     - Monitoring interface (for capturing traffic)
-
-2. Attach the SecurityOnion ISO and follow the installation wizard:
-   - Select "Evaluation Mode" for testing or "Production Mode" for full deployment
-   - Configure network interfaces appropriately
-   - Set strong credentials
-
-3. Post-installation configuration:
-   - Configure log sources
-   - Set up Elasticsearch retention policies
-   - Customize dashboards
-   - Configure alerting rules
-
-Detailed installation instructions are available in the [docs/installation.md](docs/installation.md) file.
-
----
-
-## 📊 Custom Analysis Scripts
-
-The `src/` directory contains Python scripts for enhanced data analysis:
-
-- `src/dashboards/`: Custom Kibana dashboard configurations
-- `src/analysis/`: Data analysis scripts using pandas and numpy
-- `src/visualization/`: Plotting and visualization using matplotlib and seaborn
-- `src/alerts/`: Custom alert mechanisms
-
-### Example Usage
+### Running Notebooks
 
 ```bash
-# Run basic traffic analysis
-python src/analysis/traffic_analyzer.py --timeframe 24h
+# Start Jupyter Lab
+make notebooks
 
-# Generate custom security dashboard
-python src/dashboards/generator.py --template threat_overview
-
-# Analyze specific threat patterns
-python src/analysis/threat_patterns.py --logfile /path/to/logfile
+# Alternatively, use the provided script
+./start-jupyterlab.sh
 ```
 
 ---
 
-## 📁 Directory Structure
+## 📚 Key Innovations
 
-```
-.
-├── data/         # Raw and processed data (not tracked by Git)
-├── notebooks/    # Jupyter notebooks for exploration and prototyping
-├── references/   # External resources, documentation, papers
-├── results/      # Output files: plots, reports (not tracked by Git)
-├── src/          # Source code: modules, pipelines, classes, functions
-│   ├── analysis/     # Data analysis scripts
-│   ├── alerts/       # Alert system extensions
-│   ├── dashboards/   # Custom dashboard configurations
-│   ├── integration/  # Integration with external systems
-│   └── visualization/ # Data visualization scripts
-├── docs/         # Documentation
-├── conf/         # Configuration files: .env, YAML, JSON
-├── Makefile      # Project automation
-├── CHANGELOG.md  # Version history
-└── README.md
-```
-
----
-
-## 🛠️ Development Workflow
-
-1. **Planning**: Document requirements in Confluence
-2. **Task Management**: Break down tasks in Trello
-3. **Development**:
-   - Create feature branch from `dev`
-   - Implement changes
-   - Write tests
-   - Document in Obsidian as you go
-4. **Code Review**: Submit PR from feature branch to `dev`
-5. **Deployment**: Deploy and test on development VM
-6. **Documentation**: Update documentation in Confluence
-7. **Release**: Merge to `main` when ready for production
-
----
-
-## 🔍 Monitoring Capabilities
-
-- **Network Traffic Analysis**: Deep packet inspection and analysis
-- **Log Analysis**: Centralized log collection and correlation
-- **Threat Hunting**: Tools and custom scripts for proactive threat hunting
-- **Alerting**: Rule-based and anomaly-based alert generation
-- **Visualization**: Custom dashboards for security monitoring
-
----
-
-## 🔮 Future Enhancements
-
-- **AI-Based Detection**: Implement machine learning models for anomaly detection
-- **Automated Response**: Develop scripts for automated incident response
-- **Threat Intelligence Integration**: Connect with external threat feeds
-- **Extended Visualization**: Advanced data visualization techniques
-- **Reporting**: Automated report generation for compliance and security status
-
----
-
-## 📚 Documentation
-
-- [Installation Guide](docs/installation.md)
-- [Configuration Reference](docs/configuration.md)
-- [Custom Analysis Scripts](docs/analysis_scripts.md)
-- [Alert Configuration](docs/alerts.md)
-- [Development Guidelines](docs/development.md)
+- **Comparative Analysis Framework**: Systematic evaluation of different algorithms and techniques
+- **Hybrid Detection Approaches**: Combining supervised and unsupervised methods
+- **Explainable AI for Security**: Making complex models interpretable for security analysts
+- **Automated Intelligence Generation**: Using LLMs to transform raw analysis into actionable reports
+- **Performance Benchmarking**: Quantitative assessment of model efficacy for security use cases
 
 ---
 
