@@ -12,6 +12,7 @@ dependencies:
   - jupyter
   - jupyterlab
   - duckdb
+  - tqdm
   - requests
   - python-dotenv
   - pyyaml
