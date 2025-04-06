@@ -8,7 +8,7 @@
 CONDA_ENV="secon"
 APP_PATH="/Users/marc/Documents/INcode/SecON"
 SCREEN_NAME="jupyterlab-secon"
-PORT=8898
+PORT=8888
 
 # Get current hostname and OS type
 HOSTNAME=$(hostname -s)
