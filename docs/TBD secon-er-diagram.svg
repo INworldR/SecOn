@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900">
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">SecurityOnion Log Data Schema</text>
+  <text x="600" y="70" font-family="Arial" font-size="14" text-anchor="middle" fill="#555">Optimized for Data Science Analysis</text>
+  
+  <!-- Events Table -->
+  <rect x="450" y="100" width="300" height="240" fill="#e3f2fd" stroke="#1565c0" stroke-width="2" rx="5"/>
+  <text x="600" y="125" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#1565c0">events</text>
+  <line x1="450" y1="135" x2="750" y2="135" stroke="#1565c0" stroke-width="2"/>
+  <text x="460" y="155" font-family="Arial" font-size="14" fill="#333">event_id (PK)</text>
+  <text x="460" y="175" font-family="Arial" font-size="14" fill="#333">timestamp</text>
+  <text x="460" y="195" font-family="Arial" font-size="14" fill="#333">source_ip_id (FK)</text>
+  <text x="460" y="215" font-family="Arial" font-size="14" fill="#333">source_port</text>
+  <text x="460" y="235" font-family="Arial" font-size="14" fill="#333">dest_ip_id (FK)</text>
+  <text x="460" y="255" font-family="Arial" font-size="14" fill="#333">dest_port</text>
+  <text x="460" y="275" font-family="Arial" font-size="14" fill="#333">protocol_id (FK)</text>
+  <text x="460" y="295" font-family="Arial" font-size="14" fill="#333">action_id (FK)</text>
+  <text x="460" y="315" font-family="Arial" font-size="14" fill="#333">bytes</text>
+  <text x="460" y="335" font-family="Arial" font-size="14" fill="#333">flags</text>
+  
+  <!-- IP Addresses Table -->
+  <rect x="100" y="150" width="250" height="160" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" rx="5"/>
+  <text x="225" y="175" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#2e7d32">ip_addresses</text>
+  <line x1="100" y1="185" x2="350" y2="185" stroke="#2e7d32" stroke-width="2"/>
+  <text x="110" y="205" font-family="Arial" font-size="14" fill="#333">ip_id (PK)</text>
+  <text x="110" y="225" font-family="Arial" font-size="14" fill="#333">ip_address</text>
+  <text x="110" y="245" font-family="Arial" font-size="14" fill="#333">country_id (FK)</text>
+  <text x="110" y="265" font-family="Arial" font-size="14" fill="#333">organization_id (FK)</text>
+  <text x="110" y="285" font-family="Arial" font-size="14" fill="#333">asn</text>
+  <text x="110" y="305" font-family="Arial" font-size="14" fill="#333">is_private</text>
+  
+  <!-- Countries Table -->
+  <rect x="100" y="400" width="250" height="160" fill="#fff8e1" stroke="#f57f17" stroke-width="2" rx="5"/>
+  <text x="225" y="425" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#f57f17">countries</text>
+  <line x1="100" y1="435" x2="350" y2="435" stroke="#f57f17" stroke-width="2"/>
+  <text x="110" y="455" font-family="Arial" font-size="14" fill="#333">country_id (PK)</text>
+  <text x="110" y="475" font-family="Arial" font-size="14" fill="#333">country_name</text>
+  <text x="110" y="495" font-family="Arial" font-size="14" fill="#333">country_code</text>
+  <text x="110" y="515" font-family="Arial" font-size="14" fill="#333">continent</text>
+  <text x="110" y="535" font-family="Arial" font-size="14" fill="#333">region</text>
+  <text x="110" y="555" font-family="Arial" font-size="14" fill="#333">timezone</text>
+  
+  <!-- Organizations Table -->
+  <rect x="100" y="600" width="250" height="120" fill="#e0f7fa" stroke="#006064" stroke-width="2" rx="5"/>
+  <text x="225" y="625" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#006064">organizations</text>
+  <line x1="100" y1="635" x2="350" y2="635" stroke="#006064" stroke-width="2"/>
+  <text x="110" y="655" font-family="Arial" font-size="14" fill="#333">organization_id (PK)</text>
+  <text x="110" y="675" font-family="Arial" font-size="14" fill="#333">organization_name</text>
+  <text x="110" y="695" font-family="Arial" font-size="14" fill="#333">network_range</text>
+  <text x="110" y="715" font-family="Arial" font-size="14" fill="#333">type</text>
+  
+  <!-- Protocols Table -->
+  <rect x="850" y="150" width="250" height="100" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="2" rx="5"/>
+  <text x="975" y="175" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#6a1b9a">protocols</text>
+  <line x1="850" y1="185" x2="1100" y2="185" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="860" y="205" font-family="Arial" font-size="14" fill="#333">protocol_id (PK)</text>
+  <text x="860" y="225" font-family="Arial" font-size="14" fill="#333">protocol_name</text>
+  <text x="860" y="245" font-family="Arial" font-size="14" fill="#333">protocol_version</text>
+  
+  <!-- Actions Table -->
+  <rect x="850" y="300" width="250" height="100" fill="#ffebee" stroke="#b71c1c" stroke-width="2" rx="5"/>
+  <text x="975" y="325" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#b71c1c">actions</text>
+  <line x1="850" y1="335" x2="1100" y2="335" stroke="#b71c1c" stroke-width="2"/>
+  <text x="860" y="355" font-family="Arial" font-size="14" fill="#333">action_id (PK)</text>
+  <text x="860" y="375" font-family="Arial" font-size="14" fill="#333">action_name</text>
+  <text x="860" y="395" font-family="Arial" font-size="14" fill="#333">action_category</text>
+  
+  <!-- Time Dimensions Table -->
+  <rect x="850" y="450" width="250" height="200" fill="#fce4ec" stroke="#880e4f" stroke-width="2" rx="5"/>
+  <text x="975" y="475" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#880e4f">time_dimensions</text>
+  <line x1="850" y1="485" x2="1100" y2="485" stroke="#880e4f" stroke-width="2"/>
+  <text x="860" y="505" font-family="Arial" font-size="14" fill="#333">time_id (PK)</text>
+  <text x="860" y="525" font-family="Arial" font-size="14" fill="#333">timestamp</text>
+  <text x="860" y="545" font-family="Arial" font-size="14" fill="#333">year</text>
+  <text x="860" y="565" font-family="Arial" font-size="14" fill="#333">month</text>
+  <text x="860" y="585" font-family="Arial" font-size="14" fill="#333">day</text>
+  <text x="860" y="605" font-family="Arial" font-size="14" fill="#333">hour</text>
+  <text x="860" y="625" font-family="Arial" font-size="14" fill="#333">day_of_week</text>
+  <text x="860" y="645" font-family="Arial" font-size="14" fill="#333">is_weekend</text>
+  
+  <!-- Port Categories Table -->
+  <rect x="850" y="700" width="250" height="120" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2" rx="5"/>
+  <text x="975" y="725" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#3f51b5">port_categories</text>
+  <line x1="850" y1="735" x2="1100" y2="735" stroke="#3f51b5" stroke-width="2"/>
+  <text x="860" y="755" font-family="Arial" font-size="14" fill="#333">port_id (PK)</text>
+  <text x="860" y="775" font-family="Arial" font-size="14" fill="#333">port_number</text>
+  <text x="860" y="795" font-family="Arial" font-size="14" fill="#333">service_name</text>
+  <text x="860" y="815" font-family="Arial" font-size="14" fill="#333">category</text>
+  
+  <!-- Event Details Table -->
+  <rect x="450" y="450" width="300" height="200" fill="#e0f2f1" stroke="#00695c" stroke-width="2" rx="5"/>
+  <text x="600" y="475" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#00695c">event_details</text>
+  <line x1="450" y1="485" x2="750" y2="485" stroke="#00695c" stroke-width="2"/>
+  <text x="460" y="505" font-family="Arial" font-size="14" fill="#333">detail_id (PK)</text>
+  <text x="460" y="525" font-family="Arial" font-size="14" fill="#333">event_id (FK)</text>
+  <text x="460" y="545" font-family="Arial" font-size="14" fill="#333">pfsense_rule_id</text>
+  <text x="460" y="565" font-family="Arial" font-size="14" fill="#333">pfsense_rule_uuid</text>
+  <text x="460" y="585" font-family="Arial" font-size="14" fill="#333">firewall_interface</text>
+  <text x="460" y="605" font-family="Arial" font-size="14" fill="#333">syslog_severity</text>
+  <text x="460" y="625" font-family="Arial" font-size="14" fill="#333">tcp_flags</text>
+  <text x="460" y="645" font-family="Arial" font-size="14" fill="#333">other_details (JSON)</text>
+  
+  <!-- Relationship Lines -->
+  <!-- IP to Events (source) -->
+  <line x1="350" y1="200" x2="450" y2="195" stroke="#333" stroke-width="1"/>
+  <polygon points="445,195 450,195 448,197" fill="#333"/>
+  
+  <!-- IP to Events (destination) -->
+  <line x1="350" y1="220" x2="450" y2="235" stroke="#333" stroke-width="1"/>
+  <polygon points="445,235 450,235 448,237" fill="#333"/>
+  
+  <!-- Country to IP -->
+  <line x1="225" y1="400" x2="225" y2="310" stroke="#333" stroke-width="1"/>
+  <polygon points="225,315 225,310 227,312" fill="#333"/>
+  
+  <!-- Organization to IP -->
+  <line x1="225" y1="600" x2="225" y2="470" stroke="#333" stroke-width="1"/>
+  <line x1="225" y1="470" x2="180" y2="470" stroke="#333" stroke-width="1"/>
+  <line x1="180" y1="470" x2="180" y2="265" stroke="#333" stroke-width="1"/>
+  <polygon points="180,270 180,265 182,267" fill="#333"/>
+  
+  <!-- Protocol to Events -->
+  <line x1="850" y1="200" x2="750" y2="275" stroke="#333" stroke-width="1"/>
+  <polygon points="745,272 750,275 749,270" fill="#333"/>
+  
+  <!-- Action to Events -->
+  <line x1="850" y1="350" x2="750" y2="295" stroke="#333" stroke-width="1"/>
+  <polygon points="745,292 750,295 749,298" fill="#333"/>
+  
+  <!-- Events to Details -->
+  <line x1="600" y1="340" x2="600" y2="450" stroke="#333" stroke-width="1"/>
+  <polygon points="600,445 600,450 602,448" fill="#333"/>
+  
+  <!-- Time Dimensions to Events -->
+  <line x1="850" y1="520" x2="670" y2="520" stroke="#333" stroke-width="1"/>
+  <line x1="670" y1="520" x2="670" y2="175" stroke="#333" stroke-width="1"/>
+  <polygon points="670,180 670,175 672,177" fill="#333"/>
+  
+  <!-- Ports Categories -->
+  <path d="M850,760 C800,760 800,500 775,500 L750,500" fill="none" stroke="#333" stroke-width="1"/>
+  <polygon points="755,500 750,500 752,502" fill="#333"/>
+    
+  <!-- Legend -->
+  <rect x="50" y="780" width="1100" height="80" fill="#f5f5f5" stroke="#757575" stroke-width="1" rx="3"/>
+  <text x="60" y="800" font-family="Arial" font-size="14" font-weight="bold" fill="#333">Schema Notes:</text>
+  <text x="60" y="820" font-family="Arial" font-size="12" fill="#333">• All timestamps are stored in UTC format for consistent analysis across time zones</text>
+  <text x="60" y="840" font-family="Arial" font-size="12" fill="#333">• The time_dimensions table allows for efficient time-based queries and aggregations without expensive date calculations</text>
+  <text x="600" y="820" font-family="Arial" font-size="12" fill="#333">• IP addresses are normalized to reduce storage and improve query performance</text>
+  <text x="600" y="840" font-family="Arial" font-size="12" fill="#333">• Complex nested JSON fields can be stored in the other_details column as JSON for flexibility</text>
+</svg>
