@@ -23,7 +23,7 @@ seqdate() {
 #PATTERN="host.name:secon observer.type:firewall"
 PATTERN="observer.type:firewall"
 
-for DAY in $(seqdate 2025-04-05 2025-04-08); do
+for DAY in $(seqdate 2025-05-07 2025-05-08); do
     FILE=../data/data_log_firewall_${DAY}.json
     #echo -n '' >$FILE
     tmpfile=$(mktemp ../data/.export_${DAY}.XXXXXX)
